@@ -72,6 +72,10 @@ module List = struct
         let xs, ys, zs = unzip3 l in
         (x :: xs, y :: ys, z :: zs)
     | [] -> ([], [], [])
+
+  let group_by cmp key l =
+    List.fold_left l ~init:(Map.empty cmp) ~f:(fun g x -> Map.add_multi g ~key:(key x) ~data:x)
+    |> Map.to_alist
 end
 
 module Set = struct
