@@ -4,7 +4,11 @@ module Make (C : sig
   val src : Logs.Src.t
 end) =
 struct
-  let setup_log level =
+  open C
+
+  include (val Logs.src_log src : Logs.LOG)
+
+  let setup_log () =
     let format_reporter ppf =
       let open Logs in
       let report src level ~over k msgf =
@@ -32,8 +36,9 @@ struct
     in
     let ppf = Fmt_tty.setup Out_channel.stderr in
     Format.pp_set_margin ppf 120;
-    Logs.set_level (Some level);
     Logs.set_reporter (format_reporter ppf)
+
+  let set_level = Logs.Src.set_level src
 
   let param =
     let open Command.Let_syntax in
@@ -46,7 +51,6 @@ struct
       let level =
         if verbose then Logs.Debug else if quiet then Logs.Error else Logs.Info
       in
-      setup_log level]
-
-  include (val Logs.src_log C.src : Logs.LOG)
+      setup_log ();
+      Logs.Src.set_level src (Some level)]
 end
